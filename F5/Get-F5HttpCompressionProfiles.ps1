@@ -1,26 +1,18 @@
-﻿Function Get-F5SslProfiles {
+﻿Function Get-F5HttpCompressionProfiles {
 <#
 .SYNOPSIS
-Determine SSL profile and virtual server info for specified F5(s).
+Determine HTTP compression profile and virtual server info for specified F5(s).
 
 .DESCRIPTION
-Determine SSL profile and virtual server info for specified F5(s).
+Determine HTTP compression profile and virtual server info for specified F5(s).
 
 .NOTES
 Author: 
     DS
 Notes:
-    Revision 09
+    Revision 01
 Revision:
-    V01: 2023.04.24 by DS :: First revision.
-    V02: 2023.06.01 by DS :: Added '#Requires -Module Posh-SSH'.
-    V03: 2023.07.03 by DS :: Removed 'ValueFromPipeline=$True' from $F5 parameter. Cleaned up spacing.
-    V04: 2023.07.12 by DS :: Removed '#Requires -Module Posh-SSH' (not honored in functions). Added logic for importing the module.
-    V05: 2024.07.17 by DS :: Added 'Shell' subfunction and updated invoked SSH commands to account for non-bash shell users.
-    V06: 2024.12.23 by DS :: Fixed 'problems' reported by VS code.
-    V07: 2025.03.17 by DS :: Updated comments and spacing.
-    V08: 2025.03.20 by DS :: Added 'peer-cert-mode' to output. Swapped 'Shell' subfunction for recently developed & improved 'GetShell' subfunction. Improved 'VsProfiles' subfunction.
-    V09: 2025.03.21 by DS :: Cleaned variable names in subfunctions.
+    V01: 2025.03.20 by DS :: First revision (quick repurpose of 'Get-F5SslProfiles').
 Call From:
     PowerShell v5.1 or higher w/ Posh-SSH module
 
@@ -31,12 +23,12 @@ The name(s) of F5(s) for which hardware and version info will be retrieved.
 Credentials for connecting to F5(s).
 
 .EXAMPLE
-Get-F5SslProfiles -F5 'f5-ext-01.contoso.com'
-Will retrieve SSL profile and virtual server info from 'f5-ext-01.contoso.com'.
+Get-F5HttpCompressionProfiles -F5 'f5-ext-01.contoso.com'
+Will retrieve HTTP compression profile and virtual server info from 'f5-ext-01.contoso.com'.
 
 .EXAMPLE
 $F5Creds = Get-Credential; Get-F5SslProfiles -F5 'f5-ext-01.contoso.com' -Credential $F5Creds
-Will prompt for and store credentials in variable $F5Creds. Will retrieve SSL profile and virtual server info from 'f5-ext-01.contoso.com' using the credentials stored in $F5Creds.
+Will prompt for and store credentials in variable $F5Creds. Will retrieve HTTP compression profile and virtual server info from 'f5-ext-01.contoso.com' using the credentials stored in $F5Creds.
 #>
 
 [CmdletBinding()]
@@ -90,17 +82,17 @@ Function GetShell {
     }
 }
 
-# Subfunction to retrieve SSL (client and server) profiles
-Function SslProfiles {
+# Subfunction to retrieve HTTP compression profiles
+Function CompressionProfiles {
     
     # Results for this subfunction
-    $ssl = New-Object -TypeName System.Collections.ArrayList
+    $Results = New-Object -TypeName System.Collections.ArrayList
 
-    # tmsh command: list client-ssl profiles
+    # tmsh command: list http compression profiles
     $cmd = $null
     switch ($shell) {
-        'bash' {$cmd = "tmsh list /ltm profile client-ssl peer-cert-mode"}
-        'tmsh' {$cmd = "list /ltm profile client-ssl peer-cert-mode"}
+        'bash' {$cmd = "tmsh list /ltm profile http-compression"}
+        'tmsh' {$cmd = "list /ltm profile http-compression"}
     }
 
     # Invoke tmsh command
@@ -111,59 +103,26 @@ Function SslProfiles {
         $out = $ssh.Output
         foreach ($o in $out) {
             switch ($o) {
-                {$_ -like "ltm profile client-ssl * {"} {
-                    $res = "" | Select-Object F5,Profile,Context,Peer-Cert-Mode
+                {$_ -like "ltm profile http-compression * {"} {
+                    $res = "" | Select-Object F5,Profile
                     $res.F5 = $f
-                    $res.Profile = $_.Replace('ltm profile client-ssl ','').TrimEnd(' {')
-                    $res.Context = [string]::new('client-ssl')
-                }
-                {$_ -like "    peer-cert-mode *"} {
-                    $res.'Peer-Cert-Mode' = $_.Replace('    peer-cert-mode ','')
+                    $res.Profile = $_.Replace('ltm profile http-compression ','').TrimEnd(' {')
                 }
                 {$_ -eq '}'} {
-                    $ssl.Add($res) | Out-Null
+                    $Results.Add($res) | Out-Null
                 }
             }
         }
     }
 
-    # tmsh command: list server-ssl profiles
-    $cmd = $null
-    switch ($shell) {
-        'bash' {$cmd = "tmsh list /ltm profile server-ssl peer-cert-mode"}
-        'tmsh' {$cmd = "list /ltm profile server-ssl peer-cert-mode"}
-    }
-
-    # Invoke tmsh command
-    $ssh = $null
-    $ssh = (Invoke-SSHCommand -SSHSession (Get-SSHSession -ComputerName $f) -Command "$cmd")
-
-    If ($ssh.ExitStatus -eq 0) {
-        $out = $ssh.Output
-        foreach ($o in $out) {
-            switch ($o) {
-                {$_ -like "ltm profile server-ssl * {"} {
-                    $res = "" | Select-Object F5,Profile,Context,Peer-Cert-Mode
-                    $res.F5 = $f
-                    $res.Profile = $_.Replace('ltm profile server-ssl ','').TrimEnd(' {')
-                    $res.Context = [string]::new('server-ssl')
-                }
-                {$_ -like "    peer-cert-mode *"} {
-                    $res.'Peer-Cert-Mode' = $_.Replace('    peer-cert-mode ','')
-                }
-                {$_ -eq '}'} {
-                    $ssl.Add($res) | Out-Null
-                }
-            }
-        }
-    }
-
-    $ssl
+    $Results
 }
 
 # Subfunction to retrieve virtual servers and profiles
 Function VsProfiles {
     
+    # $Results = New-Object -TypeName System.Collections.ArrayList
+
     # tmsh command: list virtual servers
     $cmd = $null
     switch ($shell) {
@@ -208,33 +167,33 @@ $Results = foreach ($f in $F5) {
     
     $i++
     Try {
-        Write-Progress "Gathering SSL profile info from '$f'" -PercentComplete $($i / $F5.Count * 100)
+        Write-Progress "Gathering HTTP compression profile info from '$f'" -PercentComplete $($i / $F5.Count * 100)
     }
     Catch {}
 
     SSHSession
     $shell = GetShell
 
-    Write-Verbose "Retrieve SSL profiles from '$f'"
-    $sslprofiles = SslProfiles
+    Write-Verbose "Retrieve HTTP compression profiles from '$f'"
+    $compressionprofiles = CompressionProfiles
     
     Write-Verbose "Retrieve virtual servers from '$f'"
     $vsprofiles = VsProfiles
 
-    # Attempt to match each SSL profile with a virtual server using data stored in $sslprofiles and $vsprofiles
-    foreach ($sp in $sslprofiles) {
+    # Attempt to match each HTTP compression profile with a virtual server using data stored in $compressionprofiles and $vsprofiles
+    foreach ($cp in $compressionprofiles) {
         
         $match = $null
-        $match = $vsprofiles | Where-Object { ($_.Profile -eq $sp.Profile) -and ($_.F5 -eq $f) }
+        $match = $vsprofiles | Where-Object { ($_.Profile -eq $cp.Profile) -and ($_.F5 -eq $f) }
 
-        # The individual SSL profile ($sp) is used by a virtual server
+        # The individual HTTP compression profile ($cp) is used by a virtual server
         If ($match) {
-            $match | Select-Object F5,VS,Profile,@{N="Context";E={$sp.Context}},@{N="Peer-Cert-Mode";E={$sp.'Peer-Cert-Mode'}}
+            $match | Select-Object F5,VS,Profile
         }
 
-        # The individual SSL profile ($sp) is *NOT* used by a virtual server
+        # The individual HTTP compression profile ($cp) is *NOT* used by a virtual server
         Else {
-            $sp | Select-Object F5,@{N="VS";E={[string]::new("None")}},Profile,Context,'Peer-Cert-Mode'
+            $cp | Select-Object F5,@{N="VS";E={[string]::new("None")}},Profile
         }
     }
 }
