@@ -12,6 +12,7 @@ Notes:
 Revision:
     V01: 2023.01.17 by DS :: First revision.
     V02: 2025.03.22 by DS :: Updated for GitHub.
+    V03: 2025.05.16 by DS :: Updated to include ObjectID (attributeID & governsID). Guid now calculated during 'Select-Object' (faster).
 Call From:
     PowerShell v5.1 or higher w/ ActiveDirectory module.
 
@@ -56,22 +57,13 @@ $class = "(objectclass=classschema)"
 $attribute = "(objectclass=attributeSchema)"
 
 # AD objects (classSchema)
-$Objects = Get-ADObject -Server $Server -LDAPFilter $class -Properties LdapDisplayName,SchemaIdGuid,objectClass -SearchBase $schemaNamingContext | `
-    Select-Object LdapDisplayName,SchemaIdGuid,objectClass
+$Objects = Get-ADObject -Server $Server -LDAPFilter $class -Properties LdapDisplayName,SchemaIdGuid,objectClass,governsID -SearchBase $schemaNamingContext | `
+    Select-Object LdapDisplayName,@{N="Guid";E={[System.Guid]$_.SchemaIdGuid}},objectClass,@{N="ObjectID";E={$_.governsID}}
 
 # AD objects (attributeSchema)
-$Objects += Get-ADObject -Server $Server -LDAPFilter $attribute -Properties LdapDisplayName,SchemaIdGuid,objectClass -SearchBase $schemaNamingContext | `
-    Select-Object LdapDisplayName,SchemaIdGuid,objectClass
+$Objects += Get-ADObject -Server $Server -LDAPFilter $attribute -Properties LdapDisplayName,SchemaIdGuid,objectClass,attributeID -SearchBase $schemaNamingContext | `
+    Select-Object LdapDisplayName,@{N="Guid";E={[System.Guid]$_.SchemaIdGuid}},objectClass,@{N="ObjectID";E={$_.attributeID}}
 
-# Determine Schema GUID for each object in AD Schema
-$i = 0
-$SchemaData = foreach ($obj in $Objects) {
-    $i++
-    Write-Progress "Processing $($obj.ldapdisplayname)" -PercentComplete ($i / $Objects.Count *100)
-    "" | Select-Object @{N="LdapDisplayName";E={$obj.ldapdisplayname}},@{N="SchemaGuid";E={$([System.Guid]$obj.schemaidguid)}}
-}
-
-# Output results
-$SchemaData
-
+# Output
+$Objects
 }
