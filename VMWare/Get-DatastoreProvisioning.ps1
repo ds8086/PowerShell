@@ -10,11 +10,12 @@ Retrieves datastore capacity and provisioning from vSphere/ESXi. Optionally outp
 Author: 
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision:
     V01: 2023.01.18 by DS :: First revision.
     V02: 2025.05.22 by DS :: Cleaned up for GitHub.
     V03: 2025.05.28 by DS :: Added output for VM provisioning on each datastore.
+    V04: 2025.05.28 by DS & JS :: Updated output with 'DatastoreBrowserPath'.
 Call From:
     PowerShell v5.1+ w/ VMware.VimAutomation.Core module 13.3.0+
     
@@ -86,7 +87,7 @@ foreach ($ds in $Datastores) {
     $ds | Select-Object `
         @{N="Object";E={[string]::New('Datastore')}},`
         Name,`
-        DataCenter,`
+        @{N="DatastoreBrowserPath";E={$_.DatastoreBrowserPath.Replace('vmstores:\','')}},`
         @{N="CapacityGB";E={[math]::Round($_.CapacityGB, 2)}},`
         @{N="ProvisionedGB";E={[math]::Round($ps, 2)}},`
         @{N="PercentProvisioned";E={[math]::Round($ps / $_.CapacityGB * 100, 2)}}
@@ -95,9 +96,9 @@ foreach ($ds in $Datastores) {
         $vm | Select-Object `
             @{N="Object";E={[string]::New('VM')}},`
             Name,`
-            @{N="DataCenter";E={$ds.Datacenter}},`
+            @{N="DatastoreBrowserPath";E={ "$($ds.DatastoreBrowserPath.Replace('vmstores:\',''))\$($_.Name)" }},`
             @{N="ProvisionedGB";E={[math]::Round($_.ProvisionedSpaceGB, 2)}},`
-            @{N="PercentProvisioned";E={[math]::Round($_.ProvisionedSpaceGB / $ds.CapacityGB * 100, 2)}}
+            @{N="PercentProvisioned";E={[math]::Round($_.ProvisionedSpaceGB / $ds.CapacityGB * 100, 2)}} | Sort-Object PercentProvisioned -Descending
     }
 }
 
