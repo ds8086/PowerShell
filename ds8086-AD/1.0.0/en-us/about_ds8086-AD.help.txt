@@ -1,5 +1,5 @@
 TOPIC
-    about_ds8086-AD
+    about_ds8086-ad
 
 SHORT DESCRIPTION
     Active Directory cmdlets authored and maintained by ds8086.

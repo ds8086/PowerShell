@@ -1,5 +1,4 @@
 ### Exported Commands
-
 | Command                               | Description                                                                                   |
 | :------------------------------------ | :-------------------------------------------------------------------------------------------- |
 | Find-AvailableSamAccountName          | Finds available SamAccountName                                                                |
