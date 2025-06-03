@@ -1,0 +1,30 @@
+TOPIC
+    about_ds8086-sccm
+
+SHORT DESCRIPTION
+    SCCM cmdlets authored and maintained by ds8086.
+
+LONG DESCRIPTION
+    SCCM cmdlets authored and maintained by ds8086.
+	
+PREREQUISITES
+    PowerShell v4 or greater. Client OS Windows 8 or greater. Server OS Server 2012 or greater.
+	
+COMMAND LIST
+    Clear-CMClientCache
+    Get-CMApplicationDeploymentStatusDetails
+    Get-CMDeviceCollectionMaintenanceWindows
+    Get-CMSoftwareUpdateByExecutionTime
+    Invoke-CMConfigurationBaselineEvaluation
+    Set-CMClientCache
+	
+KEYWORDS
+    ds8086 sccm
+
+SEE ALSO
+    Get-Help Clear-CMClientCache
+    Get-Help Get-CMApplicationDeploymentStatusDetails
+    Get-Help Get-CMDeviceCollectionMaintenanceWindows
+    Get-Help Get-CMSoftwareUpdateByExecutionTime
+    Get-Help Invoke-CMConfigurationBaselineEvaluation
+    Get-Help Set-CMClientCache
