@@ -1,4 +1,7 @@
-# Exported Commands
+## ds8086-AD
+A compilation of custom Active Directory related cmdlets.
+
+## Exported Commands
 
 | Command                               | Description                                                                                   |
 | :------------------------------------ | :-------------------------------------------------------------------------------------------- |
@@ -13,8 +16,5 @@
 | New-ADOrganizationalUnitDelegation    | Delegates access over specific AD objects within a specified OU to the specified group        |
 | New-X500ObjectId                      | Generates a new X500 Object ID (OID)                                                          |
 
-# Version History
-
-| Version   | Description                                                   |
-| :-------- | :------------------------------------------------------------ |
-| 1.0.0     | Initial compilation of dot-slash functions into a new module  |
+## Version History
+- **1.0.0**: Initial compilation of dot-slash functions into a new module
