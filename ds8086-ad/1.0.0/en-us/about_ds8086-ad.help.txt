@@ -1,0 +1,38 @@
+TOPIC
+    about_ds8086-ad
+
+SHORT DESCRIPTION
+    Active Directory cmdlets authored and maintained by ds8086.
+
+LONG DESCRIPTION
+    Active Directory cmdlets authored and maintained by ds8086.
+	
+PREREQUISITES
+    PowerShell v5.1+ with ActiveDirectory module.
+	
+COMMAND LIST
+    Find-AvailableSamAccountName
+    Get-ADGroupMembershipCommonality
+    Get-ADOrganizationalUnitAcl
+    Get-ADReplicationLastStats
+    Get-ADSchemaObjects
+    Get-ADWindowsServer
+    Get-ForeignSecurityPrincipalObjects
+    Get-GPOUsage
+    New-ADOrganizationalUnitDelegation
+    New-X500ObjectId
+	
+KEYWORDS
+    ds8086 ActiveDirectory
+
+SEE ALSO
+    Get-Help Find-AvailableSamAccountName
+    Get-Help Get-ADGroupMembershipCommonality
+    Get-Help Get-ADOrganizationalUnitAcl
+    Get-Help Get-ADReplicationLastStats
+    Get-Help Get-ADSchemaObjects
+    Get-Help Get-ADWindowsServer
+    Get-Help Get-ForeignSecurityPrincipalObjects
+    Get-Help Get-GPOUsage
+    Get-Help New-ADOrganizationalUnitDelegation
+    Get-Help New-X500ObjectId
