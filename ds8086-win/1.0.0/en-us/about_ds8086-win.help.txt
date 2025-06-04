@@ -1,0 +1,42 @@
+TOPIC
+    about_ds8086-win
+
+SHORT DESCRIPTION
+    Windows cmdlets authored and maintained by ds8086.
+
+LONG DESCRIPTION
+    Windows cmdlets authored and maintained by ds8086.
+	
+PREREQUISITES
+    PowerShell v5.1+
+	
+COMMAND LIST
+	Enable-DefaultVolumeACL
+	Enable-PSRemotingOnRemoteComputer
+	Get-DriveDetails
+	Get-FolderSize
+	Get-InstalledSoftware
+	Get-LargestFiles
+	Get-NetworkAdapterConfiguration
+	Get-OpenFiles
+	Get-RadiusPassword
+	Get-UptimeFromRemoteComputer
+	Get-UserProfiles
+	Read-IISLogFile
+
+KEYWORDS
+    ds8086 windows
+
+SEE ALSO
+	Get-Help Enable-DefaultVolumeACL
+	Get-Help Enable-PSRemotingOnRemoteComputer
+	Get-Help Get-DriveDetails
+	Get-Help Get-FolderSize
+	Get-Help Get-InstalledSoftware
+	Get-Help Get-LargestFiles
+	Get-Help Get-NetworkAdapterConfiguration
+	Get-Help Get-OpenFiles
+	Get-Help Get-RadiusPassword
+	Get-Help Get-UptimeFromRemoteComputer
+	Get-Help Get-UserProfiles
+	Get-Help Read-IISLogFile
