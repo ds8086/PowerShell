@@ -1,5 +1,4 @@
-### Exported Commands
-| Command                       	| Description                                                                                       |
+| Function                       	| Description                                                                                       |
 | :-------------------------------- | :------------------------------------------------------------------------------------------------ |
 | Get-F5Certificates            	| Retrieves SSL traffic certificates from specified F5(s)                                           |
 | Get-F5FileInfo                	| Determine file info for a specified file on F5(s)                                                 |
@@ -17,6 +16,3 @@
 | Get-F5VirtualServerDetails    	| Retrieves all virtual server, pool, and pool members from the specified F5                        |
 | Get-F5VirtualServerTranslation	| Retrieves all virtual servers and related network translation settings from the specified F5(s)   |
 | Remove-F5Certificate          	| Removes specified certificate(s) and related files from specified F5                              |
-
-### Version History
-- **1.0.0**: Initial compilation of dot-slash functions into a new module

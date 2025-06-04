@@ -1,5 +1,4 @@
-### Exported Commands
-| Command                       	| Description                                                                                           |
+| Function                       	| Description                                                                                           |
 | :-------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Add-AntiSpamPolicyAllowedSender   | Adds an allowed sender address/domain to the default Exchange Online HostedContentFilterPolicy (spam) |
 | Clear-MsolRoleMembership          | Clears MSOL and Exchange administrative role membership from one or more users                        |
@@ -8,6 +7,3 @@
 | Get-MsolRoleReport                | Retrieves Microsoft online & Exchange online role report                                              |
 | Get-MsolUserLastSignIn            | Retrieves AzureAD last sign in info for user(s)                                                       |
 | Get-MsolUserMfaStatus             | Retrieves MFA status of Microsoft Online (M365) users                                                 |
-
-### Version History
-- **1.0.0**: Initial compilation of dot-slash functions into a new module
