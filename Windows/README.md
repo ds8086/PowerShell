@@ -2,6 +2,7 @@
 | :-------------------------------- | :---------------------------------------------------------------------------------------------------- |
 | Enable-DefaultVolumeACL           | Creates 'Default' volume ACL entries                                                                  |
 | Enable-PSRemotingOnRemoteComputer | Attempts to enable PS remoting on specified remote computer(s)                                        |
+| Find-NetConnection                | Similar to the native 'Test-NetConnection' cmdlet provided by the NetTCPIP module                     |
 | Get-DriveDetails                  | Retrieves drive information for specified computer(s)                                                 |
 | Get-FolderSize                    | Calculates the total file size for the specified folder path                                          |
 | Get-InstalledSoftware             | Retrieves installed software information for specified computer(s)                                    |

@@ -2,19 +2,23 @@
 <#
 .SYNOPSIS
 Creates 'Default' volume ACL entries.
+
 .DESCRIPTION
 Retrieves all volumes not mounted as drive letter C: and adds access control list entries (ACEs) for that of a newly provisioned volume.
+
 .NOTES
 Author: 
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision:
     V01: 2022.10.05 by DS :: First revision.
     V02: 2022.01.18 by DS :: Added script header. Added check for 'BUILTIN\Users' ACL entry.
     V03: 2025.03.22 by DS :: Updated for GitHub. Removed check for 'BUILTIN\Users' ACL entry.
+    V04: 2025.06.12 by DS :: Updated spacing in script header.
 Call From:
     PowerShell v5.1 or higher
+
 .EXAMPLE
 Enable-DefaultVolumeAcl
 Retrieves all volumes not mounted as drive letter C: and adds access control list entries (ACEs) for that of a newly provisioned volume. Transcript log wil be generated in the current working directory.
