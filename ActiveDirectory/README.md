@@ -4,6 +4,7 @@
 | Get-ADGroupMembershipCommonality      | Determines AD group membership commonality for all users in the specified organizational unit |
 | Get-ADOrganizationalUnitAcl           | Retrieves AD organizational unit ACLs                                                         |
 | Get-ADReplicationLastStats            | Retrieves last AD replication attempt, result, and success for domain controllers             |
+| Get-ADRidCount                        | Retrieves the number of RIDs issued and remaining for the specified domain                    |
 | Get-ADSchemaObjects                   | Retrieves list of AD schema objects and corresponding GUIDs                                   |
 | Get-ADWindowsServer                   | Retrieves information about Windows server(s) via Get-ADComputer cmdlet                       |
 | Get-ForeignSecurityPrincipalObjects   | Retrieves and attempts to translate AD foreignSecurityPrincipal objects                       |
