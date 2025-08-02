@@ -11,9 +11,10 @@ https://techcommunity.microsoft.com/blog/askds/managing-rid-pool-depletion/39973
 Authors: 
     DS
 Notes:
-    Revision 01
+    Revision 02
 Revision:
     V01: 2025.08.01 by DS :: First revision.
+    V02: 2025.08.02 by DS :: Required modules logic (good catch JS).
 Call From:
     PowerShell v5.1 or higher w/ ActiveDirectory module
 
@@ -38,6 +39,20 @@ param (
     [Parameter(Mandatory=$False, Position=0)]
     [string]$DomainName = $env:USERDNSDOMAIN
 )
+
+# Define and import required modules
+$RequiredModules = "ActiveDirectory"
+foreach ($rm in $RequiredModules) {
+    Try {
+        If (!(Get-Module -Name $rm)) {
+            Import-Module -Name $rm -ErrorAction Stop
+        }
+    }
+    Catch {
+        Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
+        Break
+    }
+}
 
 Try {
     $Domain = Get-ADDomain -Identity $DomainName

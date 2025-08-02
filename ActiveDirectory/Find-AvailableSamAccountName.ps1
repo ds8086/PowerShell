@@ -10,9 +10,10 @@ Finds available SamAccountName based on 'GivenName' and 'Surname' values.
 Author: 
     DS
 Notes:
-    Revision 01
+    Revision 02
 Revision:
     V01: 2025.05.22 by DS :: First polished version for GitHub.
+    V02: 2025.08.02 by DS :: Required modules logic.
 Call From:
     PowerShell v5.1+ w/ ActiveDirectory module
 
@@ -45,6 +46,20 @@ param (
     [Parameter(Mandatory=$False, Position=2)]
     [string]$Server = $(Get-ADDomain -Identity $env:USERDOMAIN).PDCEmulator
 )
+
+# Define and import required modules
+$RequiredModules = "ActiveDirectory"
+foreach ($rm in $RequiredModules) {
+    Try {
+        If (!(Get-Module -Name $rm)) {
+            Import-Module -Name $rm -ErrorAction Stop
+        }
+    }
+    Catch {
+        Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
+        Break
+    }
+}
 
 # Remove non-alphabet characters
 $gn = $GivenName -replace "[^a-zA-Z]"
