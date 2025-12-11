@@ -31,6 +31,7 @@ Path to cockatrice *.cod file or plain text (*.dec, *.dek, *.txt) file ie;
 	4x Shock
 	4	Rift Bolt
 	4x	Chain Lightning
+File contents below a carriage return are not processed (sideobard).
 
 .PARAMETER SuperTypes
 Retain card supertypes of Basic, Legendary, and Snow.
@@ -312,25 +313,25 @@ switch ($file.Extension) {
 	{$_ -eq '.cod'} {
 		$xml = New-Object -TypeName xml
 		$xml.Load((Convert-Path $file.FullName))
-		$deck = $xml.cockatrice_deck.zone.card | Select-Object @{Name="qty";Expression={$_.number}},name,cmc,type
+		$deck = $($xml.cockatrice_deck.zone | Where-Object {$_.name -eq 'main'}).card | Select-Object @{Name="qty";Expression={$_.number}},name,cmc,type
 	}
 
 	# any other file
 	Default {
-		$deck = Get-Content $DeckList -Encoding UTF8 | ForEach-Object {
-			if ($_ -ne "" -and $_ -notlike "#*") {
+		$deck = foreach ($c in (Get-Content $DeckList -Encoding UTF8)) {
+			if ($c -ne "" -and $c -notlike "#*") {
 				$card = "" | Select-Object qty,name,cmc,type
 		
 				# quantity and card name separated by tab
-				if ($_ -like "*`t*") {
-					$card.qty = ($_.Split("`t") | Select-Object -first 1)
-					$card.name = $_.Replace("$($card.qty)`t",'')	
+				if ($c -like "*`t*") {
+					$card.qty = ($c.Split("`t") | Select-Object -first 1)
+					$card.name = $c.Replace("$($card.qty)`t",'')	
 				}
 			
 				# quantity and card name separated by space
 				else {
-					$card.qty = ($_.Split(' ') | Select-Object -first 1)
-					$card.name = $_.Replace("$($card.qty) ",'')
+					$card.qty = ($c.Split(' ') | Select-Object -first 1)
+					$card.name = $c.Replace("$($card.qty) ",'')
 				}
 			
 				# trim 'x' from quantity if present
@@ -338,6 +339,10 @@ switch ($file.Extension) {
 					$card.qty = $($card.qty).TrimEnd('x')
 				}
 				$card
+			}
+			elseif ($c -eq "") {
+				Write-Verbose "Skipping file contents below carriage return"
+				break
 			}
 		}
 	}
