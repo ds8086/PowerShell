@@ -10,15 +10,22 @@ Retrieve event ID 2889 directory service log entries. Note: This logging is *not
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2023.03.08 by DS :: First revision.
     V02: 2025.11.19 by DS :: Minor overhaul for GitHub.
+    V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
 Call From:
     PowerShell v4 or higher
 
+.INPUTS
+None
+
+.OUTPUTS
+None
+
 .PARAMETER MaxEvents
-Optional parameter to specify the number of most recent events in directory services log to search for event ID 2889 log entries. The default value is 5000.
+Optional parameter to specify the number of most recent events in directory services log to search for event ID 2889 log entries. Default is 5000.
 
 .EXAMPLE
 Get-LDAPSigningEvents
@@ -34,7 +41,7 @@ param (
     [long]$MaxEvents = 5000
 )
 
-If ($MaxEvents -gt 5000) {
+if ($MaxEvents -gt 5000) {
     Write-Warning "Retrieving more than 5000 events is not recommended and greatly increases script execution time"
 }
 
@@ -65,7 +72,7 @@ $select = @{
 }
 
 $WinEvent = Get-WinEvent @params | Where-Object {$_.Id -eq 2889}
-If ($WinEvent) {
+if ($WinEvent) {
 	foreach ($we in $WinEvent) {
 		$i++
 		Write-Progress "Parsing events..." -PercentComplete ($i / $WinEvent.Count * 100)
@@ -76,7 +83,7 @@ If ($WinEvent) {
 		$we | Select-Object @select
 	}
 }
-Else {
+else {
     Write-Warning "No 2889 event log entries"
 }
 

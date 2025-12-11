@@ -10,29 +10,36 @@ Finds available SamAccountName based on 'GivenName' and 'Surname' values.
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2025.05.22 by DS :: First polished version for GitHub.
     V02: 2025.08.02 by DS :: Required modules logic.
+    V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
 Call From:
     PowerShell v5.1+ w/ ActiveDirectory module
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER GivenName
 The given (first) name of the user.
 
 .PARAMETER Surname
-The surname (last name) of the user.
+The surname (last) name of the user.
 
 .PARAMETER Server
 Optional parameter to specify the domain or domain controller for AD operations.
 
 .EXAMPLE
 Find-AvailableSamAccountName -GivenName James -Surname Kirk
-Will search AD for the first available SamAccountName based on the naming convention of first letter of Givenname and complete Surname (jkirk). Should the "first choice" be unavailable, subsequent letters from the GivenName will be added as required (jakirk > jamkirk > etc.)
+Will search AD for the first available SamAccountName based on the naming convention of first letter of GivenName and complete Surname (jkirk).
 
 .EXAMPLE
 Import-Csv .\user_list.csv | % { Find-AvailableSamAccountName -GivenName $_.GivenName -Surname $_.Surname }
-Will search AD for the first available SamAccountName for each user liseted in the two column (GivenName and Surname) CSV file.
+Will search AD for the first available SamAccountName for each user listed in the two column (GivenName and Surname) CSV file.
 #>
 
 [CmdletBinding()]
@@ -50,14 +57,14 @@ param (
 # Define and import required modules
 $RequiredModules = "ActiveDirectory"
 foreach ($rm in $RequiredModules) {
-    Try {
-        If (!(Get-Module -Name $rm)) {
+    try {
+        if (!(Get-Module -Name $rm)) {
             Import-Module -Name $rm -ErrorAction Stop
         }
     }
-    Catch {
+    catch {
         Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        Break
+        break
     }
 }
 
@@ -69,21 +76,24 @@ $sn = $Surname -replace "[^a-zA-Z]"
 [int32]$o = $gn.Length
 [int32]$i = 0
 
-Do {
+do {
     $i++
     $sam = "$($gn.Substring(0,$i))$sn"
 
-    If ($sam.Length -gt 20) {
+    if ($sam.Length -gt 20) {
         $sam = $sam.SubString(0,20)
     }
 
     $u = Get-ADUser -LDAPFilter "(SamAccountName=$sam)" -Server $Server
-} Until ((!($u)) -or $i -eq $o)
+}
+until (
+    (!($u)) -or $i -eq $o
+)
 
-If ($u) {
+if ($u) {
     Write-Warning "Unable to find available SamAccountName for '$($GivenName) $($Surname)'"
 }
-ElseIf (!($u)) {
+elseif (!($u)) {
     "" | Select-Object @{N="GivenName";E={$GivenName}},@{N="Surname";E={$Surname}},@{N="SamAccountName";E={$sam}}
 }
 

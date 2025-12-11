@@ -10,15 +10,22 @@ Retrieves AD organizational unit ACLs. 'IdentityReference' and 'ExcludeInherited
 Author: 
     DS
 Notes:
-    Revision 05
+    Revision 06
 Revision:
     V01: 2022.03.15 by DS :: First revision.
     V02: 2022.04.07 by DS :: Fixed typo in script header.
     V03: 2022.04.16 by DS :: Fixed problems reported by VS Code.
     V04: 2022.06.01 by DS :: Added -Server and -Credential parameters.
     V05: 2025.05.22 by DS :: Dust blown off for GitHub.
+    V06: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Optimized logic for alternate credentials.
 Call From:
     PowerShell v5.1+ w/ ActiveDirectory module
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER IdentityReference
 Filter results to display ACLs for only the specified IdentityReference (user or group).
@@ -64,38 +71,30 @@ param (
 # Define and import required modules
 $RequiredModules = "ActiveDirectory"
 foreach ($rm in $RequiredModules) {
-    Try {
-        If (!(Get-Module -Name $rm)) {
+    try {
+        if (!(Get-Module -Name $rm)) {
             Import-Module -Name $rm -ErrorAction Stop
         }
     }
-    Catch {
+    catch {
         Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        Break
+        break
     }
 }
 
 # Define domain and OU 'base' for search
 $Domain = Get-ADDomain -Server $Server
 
-# Create parameter hash table based on $Credential being $null or specified
-Switch($Credential) { 
-    $null {
-        $InvokeParams = @{
-            'ComputerName' = "$($Domain.PDCEmulator)";
-            'ErrorAction' = 'Stop';
-        }
-    }
-    Default {
-        $InvokeParams = @{
-            'ComputerName' = "$($Domain.PDCEmulator)";
-            'ErrorAction' = 'Stop';
-            'Credential' = $Credential;
-        }
-    }
+# Parameter hash table for invoke-command
+$InvokeParams = @{
+    'ComputerName' = "$($Domain.PDCEmulator)";
+    'ErrorAction' = 'Stop';
+}
+if ($Credential) {
+    $InvokeParams.Add('Credential', $Credential)
 }
 
-Try {
+try {
     $ACLs = Invoke-Command @InvokeParams -ScriptBlock {
         Import-Module ActiveDirectory
         $OUs = Get-ChildItem -Path "AD:\$($using:Domain.DistinguishedName)" -Recurse | Where-Object {$_.ObjectClass -eq "organizationalUnit"}
@@ -104,20 +103,20 @@ Try {
         }
     }
 }
-Catch [System.Management.Automation.Remoting.PSRemotingTransportException] {
+catch [System.Management.Automation.Remoting.PSRemotingTransportException] {
     Write-Host "FAILURE: Invalid credentials for connecting to '$($Domain.PDCEmulator)'" -ForegroundColor Red
 }
 
-If ($ACLs) {
+if ($ACLs) {
     
     # Return ACLs filtered on $IdentityReference
-    If (!$ExcludeInherited) {
+    if (!$ExcludeInherited) {
         $ACLs | Where-Object {$_.IdentityReference -like "*$IdentityReference*"} | Select-Object `
             @{N="Server";E={$Domain.PDCEmulator}},*
     }
     
     # Return ACLs filtered on $IdentityReference omitting inherited ACLs
-    Else {
+    else {
         $ACLs | Where-Object {$_.IdentityReference -like "*$IdentityReference*" -and $_.IsInherited -eq $False} | Select-Object `
             @{N="Server";E={$Domain.PDCEmulator}},*
     }

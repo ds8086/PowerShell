@@ -10,12 +10,19 @@ Retrieves group membership count for specified AD user.
 Author:
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2024.04.12 by DS :: Rough draft revision.
     V02: 2025.11.20 by DS :: Polished for GitHub.
+    V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
 Call From:
     PowerShell v4 or higher w/ ActiveDirectory module
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER Identity
 The identity (samAccountName, UserPrincipleName, DN) of AD user.
@@ -51,12 +58,12 @@ $Queued = New-Object -TypeName System.Collections.ArrayList
 $Result = New-Object -TypeName System.Collections.ArrayList
 
 # AD user and its group membership
-Try {
+try {
     $ADUser = Get-ADUser -Server $Server -Identity $Identity -Properties MemberOf, PrimaryGroup -ErrorAction Stop
     $membership = $ADUser.MemberOf
     $membership += $ADUser.PrimaryGroup
 }
-Catch {
+catch {
     throw
 }
 
@@ -71,12 +78,12 @@ $Queued.Add('1') | Out-Null
 
 # Main process on queued AD groups
 $i = 0
-Do {
+do {
     foreach ( $q in $Queued ) {
         
         # Break at 1000 groups unless 'NoLimit' is specified
-        If ($Result.Count -eq 1000) {
-            If ($NoLimit -eq $False) {
+        if ($Result.Count -eq 1000) {
+            if ($NoLimit -eq $False) {
                 Write-Warning "User '$Identity' has too many Group SIDs! Run again with '-NoLimit'."
                 break
             }
@@ -90,17 +97,17 @@ Do {
             $parentGroups = (Get-ADGroup -Server $Server -Identity $q -Properties MemberOf).MemberOf
             
             # Add any parent groups to the dynamic array of queued groups
-            If ($parentGroups) {
+            if ($parentGroups) {
                 Write-Verbose "Group '$q' is a member of $($parentGroups.Count) parent group(s)"
                 foreach ($pg in $parentGroups) {
-                    If ( ($Queued -notcontains $pg) -and ($Result -notcontains $pg) ) {
+                    if ( ($Queued -notcontains $pg) -and ($Result -notcontains $pg) ) {
                         $Queued += $pg
                     }
                 }
             }
             
             # Add group to results if not already present
-            If ($Result -notcontains $q) {
+            if ($Result -notcontains $q) {
                 $result.Add($q) | Out-Null
             }
             
@@ -113,7 +120,7 @@ Do {
         }
     }
 }
-Until (
+until (
     ($Queued.Count -eq 2) -or ($Result.Count -eq 1000)
 )
 

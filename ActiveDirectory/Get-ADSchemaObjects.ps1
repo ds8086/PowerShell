@@ -8,13 +8,20 @@ Retrieves list of AD schema objects and corresponding GUIDs from specified serve
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 04
 Revision:
     V01: 2023.01.17 by DS :: First revision.
     V02: 2025.03.22 by DS :: Updated for GitHub.
     V03: 2025.05.16 by DS :: Updated to include ObjectID (attributeID & governsID). Guid now calculated during 'Select-Object' (faster).
+    V04: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
 Call From:
     PowerShell v5.1 or higher w/ ActiveDirectory module.
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER Server
 Name of the server or server from which AD schema objects will be returned
@@ -38,14 +45,14 @@ param (
 # Define and import required modules
 $RequiredModules = "ActiveDirectory"
 foreach ($rm in $RequiredModules) {
-    Try {
-        If (!(Get-Module -Name $rm)) {
+    try {
+        if (!(Get-Module -Name $rm)) {
             Import-Module -Name $rm -ErrorAction Stop
         }
     }
-    Catch {
+    catch {
         Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        Break
+        break
     }
 }
 

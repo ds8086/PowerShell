@@ -10,11 +10,18 @@ Generates a new X500 Object ID (OID) used for creation of AD schema attribute ob
 Author: 
     DS
 Notes:
-    Revision 01
+    Revision 02
 Revision:
     V01: 2025.05.15 by DS :: First iteration.
+    V02: 2025.12.11 by DS :: Cleaned up header.
 Call From:
     PowerShell v5.1+
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER Prefix
 The prefix for the X500 Object ID (OID). The Default value is '1.2.840.113556.1.8000.2554'.

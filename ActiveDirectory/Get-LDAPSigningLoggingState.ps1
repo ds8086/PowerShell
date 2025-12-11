@@ -10,12 +10,19 @@ Retrieve current state of LDAP signing logging. Note: This logging is *not* enab
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2023.03.08 by DS :: First revision.
     V02: 2025.11.19 by DS :: Minor overhaul for GitHub.
+    V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
 Call From:
     PowerShell v4 or higher
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .EXAMPLE
 Get-LDAPSigningLoggingState
@@ -44,19 +51,19 @@ $select = @{
                 switch($_.'16 LDAP Interface Events'){
                     0 {[string]::new('disabled')}
                     2 {[string]::new('enabled')}
-                    default {[string]::new('unknown')}
+                    Default {[string]::new('unknown')}
                 }
             }
         }
     )
 }
 
-Try {
+try {
     Get-ItemProperty @params | Select-Object @select
 }
-Catch {
+catch {
     Write-Warning "Refer to 'https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-r2-and-2008/dd941849(v=ws.10)'"
-    Throw $Error[0].Exception.Message
+    throw $Error[0].Exception.Message
 }
 
 }

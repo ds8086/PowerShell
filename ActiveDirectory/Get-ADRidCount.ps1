@@ -9,14 +9,21 @@ https://techcommunity.microsoft.com/blog/askds/managing-rid-pool-depletion/39973
 
 .NOTES
 Authors: 
-    DS
+    DS & JS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2025.08.01 by DS :: First revision.
     V02: 2025.08.02 by DS :: Required modules logic (good catch JS).
+    V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
 Call From:
     PowerShell v5.1 or higher w/ ActiveDirectory module
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER DomainName
 The domain name (either FQDN or NetBIOS) to query. The default value is $env:USERDNSDOMAIN.
@@ -43,23 +50,23 @@ param (
 # Define and import required modules
 $RequiredModules = "ActiveDirectory"
 foreach ($rm in $RequiredModules) {
-    Try {
-        If (!(Get-Module -Name $rm)) {
+    try {
+        if (!(Get-Module -Name $rm)) {
             Import-Module -Name $rm -ErrorAction Stop
         }
     }
-    Catch {
+    catch {
         Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        Break
+        break
     }
 }
 
-Try {
+try {
     $Domain = Get-ADDomain -Identity $DomainName
 }
-Catch {
-    Throw "Unable to determine distinguishedName of domain '$DomainName'"
-    Break
+catch {
+    throw "Unable to determine distinguishedName of domain '$DomainName'"
+    break
 }
 
 $ridavailablepool = (Get-ADObject "cn=rid manager$,cn=system,$($Domain.distinguishedName)" -Property ridavailablepool -Server $Domain.RIDMaster).ridavailablepool

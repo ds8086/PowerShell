@@ -10,13 +10,20 @@ Sets the state (enabled or disabled) for LDAP signing logging. Note: This loggin
 Author: 
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision:
     V01: 2023.03.08 by DS :: First revision.
     V02: 2023.04.17 by DS :: Added 'EventLogSize' parameter and logic.
     V03: 2025.11.19 by DS :: Minor overhaul for GitHub. Removed 'EventLogSize' parameter (not honored?).
+    V04: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
 Call From:
     PowerShell v4 or higher
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER State
 The desired state of LDAP signing logging on the localhost. Valid values are 'Enabled' (2) or 'Disabled' (0).
@@ -48,12 +55,12 @@ $params = @{
     'ErrorAction' = 'Stop'
 }
 
-Try {
+try {
     Set-ItemProperty @params
 }
-Catch {
+catch {
     Write-Warning "Refer to 'https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2008-r2-and-2008/dd941849(v=ws.10)'"
-    Throw $Error[0].Exception.Message
+    throw $Error[0].Exception.Message
 }
 
 }
