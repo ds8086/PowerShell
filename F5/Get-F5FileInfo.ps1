@@ -10,12 +10,19 @@ Determine file info for a specified file on F5(s). Useful for determining if the
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2025.02.20 by DS :: First revision.
     V02: 2025.05.22 by DS :: Updated for GitHub.
+    V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Minor change to required modules.
 Call From:
     PowerShell v5.1 or higher w/ Posh-SSH module.
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER F5
 The name(s) of F5(s) for which file info will be retrieved.
@@ -28,15 +35,15 @@ Credentials for connecting to F5(s).
 
 .EXAMPLE
 Get-F5FileInfo -F5 'f5-ext-01.contoso.com' -File '/config/bigip.conf'
-Will retrieve file info for '/config/bigip.conf' from F5 'f5-ext-01.contoso.com'.
+Retrieves file info for '/config/bigip.conf' from F5 'f5-ext-01.contoso.com'.
 
 .EXAMPLE
 $F5Creds = Get-Credential; Get-F5FileInfo -F5 'f5-ext-01.contoso.com' -File '/config/bigip.conf'
-Will prompt for and store credentials in variable $F5Creds. Will retrieve file info for '/config/bigip.conf' from F5 'f5-ext-01.contoso.com' using the credentials stored in $F5Creds.
+Using credentials in variable $F5Creds, retrieves file info for '/config/bigip.conf' from F5 'f5-ext-01.contoso.com'.
 
 .EXAMPLE
 Get-F5FileInfo -F5 'f5-ext-01.contoso.com','f5-ext-02.contoso.com' -File '/config/bigip_gtm.conf'
-Will retrieve file info for '/config/bigip_gtm.conf' from F5 'f5-ext-01.contoso.com' and 'f5-ext-02.contoso.com'.
+Retrieves file info for '/config/bigip_gtm.conf' from F5 'f5-ext-01.contoso.com' and 'f5-ext-02.contoso.com'.
 #>
 
 [CmdletBinding()]
@@ -55,27 +62,26 @@ param (
 # Define and import required modules
 $RequiredModules = "Posh-SSH"
 foreach ($rm in $RequiredModules) {
-    Try {
-        If (!(Get-Module -Name $rm)) {
+    try {
+        if (!(Get-Module -Name $rm)) {
             Import-Module -Name $rm -ErrorAction Stop
         }
     }
-    Catch {
-        throw $Error[0]
-        Break
+    catch {
+        throw
     }
 }
 
 # Subfunction to create SSH session if it does not already exist
 Function SSHSession {
-    If (!(Get-SSHSession -ComputerName $f)) {
-        If ($null -eq $Credential) {
+    if (!(Get-SSHSession -ComputerName $f)) {
+        if ($null -eq $Credential) {
             $Credential = Get-Credential -Message "Enter SSH credentials for $f"
         }
-        Try {
+        try {
             New-SSHSession -ComputerName $f -Port 22 -Credential $Credential -AcceptKey -Force -WarningAction SilentlyContinue -ErrorAction Stop | Out-Null
         }
-        Catch {
+        catch {
             Write-Error -Exception "SSH.Error" -Message "Cannot SSH to '$f' with username '$($Credential.UserName)'" -Category AuthenticationError
         }
     }
@@ -90,10 +96,10 @@ Function GetShell {
         $ssh = Invoke-SSHCommand -SSHSession (Get-SSHSession -ComputerName $f) -Command $cmd
         $ssh | Select-Object @{N="cmd";E={$cmd}},ExitStatus
     }
-    If ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "tmsh *" ) {
+    if ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "tmsh *" ) {
         return "bash"
     }
-    ElseIf ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "show *" ) {
+    elseif ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "show *" ) {
         return "tmsh"
     }
 }
@@ -127,12 +133,12 @@ foreach ($f in $F5) {
         }
     }
     $ssh = Invoke-SSHCommand -Command $cmd -SSHSession (Get-SSHSession -ComputerName $f)
-    If ($ssh.ExitStatus -eq 0) {
+    if ($ssh.ExitStatus -eq 0) {
         $out = $ssh.Output.Split(' ')
         $res.Size = $out[0]
         $res.Modified = "$($out[1]) $($out[2]) $($out[3])"
     }
-    Else {
+    else {
         $res.Size = [string]::new('Error')
         $res.Modified = [string]::new('Error')
     }
@@ -147,10 +153,10 @@ foreach ($f in $F5) {
         }
     }
     $ssh = Invoke-SSHCommand -Command $cmd -SSHSession (Get-SSHSession -ComputerName $f)
-    If ($ssh.ExitStatus -eq 0) {
+    if ($ssh.ExitStatus -eq 0) {
         $res.ShaSum = $ssh.Output.Split(' ') | Select-Object -First 1
     }
-    Else {
+    else {
         $res.ShaSum = [string]::new('Error')
     }
 

@@ -10,7 +10,7 @@ Determine SSL profile and virtual server info for specified F5(s).
 Author: 
     DS
 Notes:
-    Revision 09
+    Revision 10
 Revision:
     V01: 2023.04.24 by DS :: First revision.
     V02: 2023.06.01 by DS :: Added '#Requires -Module Posh-SSH'.
@@ -19,10 +19,17 @@ Revision:
     V05: 2024.07.17 by DS :: Added 'Shell' subfunction and updated invoked SSH commands to account for non-bash shell users.
     V06: 2024.12.23 by DS :: Fixed 'problems' reported by VS code.
     V07: 2025.03.17 by DS :: Updated comments and spacing.
-    V08: 2025.03.20 by DS :: Added 'peer-cert-mode' to output. Swapped 'Shell' subfunction for recently developed & improved 'GetShell' subfunction. Improved 'VsProfiles' subfunction.
+    V08: 2025.03.20 by DS :: Added 'peer-cert-mode' to output. Replaced 'Shell' subfunction with 'GetShell'. Improved 'VsProfiles' subfunction.
     V09: 2025.03.21 by DS :: Cleaned variable names in subfunctions.
+    V10: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Minor change to required modules.
 Call From:
     PowerShell v5.1 or higher w/ Posh-SSH module
+
+.INPUTS
+None
+
+.OUTPUTS
+None
 
 .PARAMETER F5
 The name(s) of F5(s) for which hardware and version info will be retrieved.
@@ -36,7 +43,7 @@ Will retrieve SSL profile and virtual server info from 'f5-ext-01.contoso.com'.
 
 .EXAMPLE
 $F5Creds = Get-Credential; Get-F5SslProfiles -F5 'f5-ext-01.contoso.com' -Credential $F5Creds
-Will prompt for and store credentials in variable $F5Creds. Will retrieve SSL profile and virtual server info from 'f5-ext-01.contoso.com' using the credentials stored in $F5Creds.
+Using credentials in variable $F5Creds, retrieves SSL profile and virtual server info from 'f5-ext-01.contoso.com'.
 #>
 
 [CmdletBinding()]
@@ -52,21 +59,20 @@ param (
 # Define and import required modules
 $RequiredModules = "Posh-SSH"
 foreach ($rm in $RequiredModules) {
-    Try {
-        If (!(Get-Module -Name $rm)) {
+    try {
+        if (!(Get-Module -Name $rm)) {
             Import-Module -Name $rm -ErrorAction Stop
         }
     }
-    Catch {
-        Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        Break
+    catch {
+        throw
     }
 }
 
 # Subfunction to create SSH session if it does not already exist
 Function SSHSession {
-    If (!(Get-SSHSession -ComputerName $f)) {
-        If ($null -eq $Credential) {
+    if (!(Get-SSHSession -ComputerName $f)) {
+        if ($null -eq $Credential) {
             $Credential = Get-Credential -Message "Enter SSH credentials for $f"
         }
         New-SSHSession -ComputerName $f -Port 22 -Credential $Credential -AcceptKey -Force -WarningAction SilentlyContinue | Out-Null
@@ -82,10 +88,10 @@ Function GetShell {
         $ssh = Invoke-SSHCommand -SSHSession (Get-SSHSession -ComputerName $f) -Command $cmd
         $ssh | Select-Object @{N="cmd";E={$cmd}},ExitStatus
     }
-    If ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "tmsh *" ) {
+    if ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "tmsh *" ) {
         return "bash"
     }
-    ElseIf ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "show *" ) {
+    elseif ( ($cmdtests | Where-Object {$_.ExitStatus -eq 0}).cmd -like "show *" ) {
         return "tmsh"
     }
 }
@@ -107,7 +113,7 @@ Function SslProfiles {
     $ssh = $null
     $ssh = (Invoke-SSHCommand -SSHSession (Get-SSHSession -ComputerName $f) -Command "$cmd")
 
-    If ($ssh.ExitStatus -eq 0) {
+    if ($ssh.ExitStatus -eq 0) {
         $out = $ssh.Output
         foreach ($o in $out) {
             switch ($o) {
@@ -138,7 +144,7 @@ Function SslProfiles {
     $ssh = $null
     $ssh = (Invoke-SSHCommand -SSHSession (Get-SSHSession -ComputerName $f) -Command "$cmd")
 
-    If ($ssh.ExitStatus -eq 0) {
+    if ($ssh.ExitStatus -eq 0) {
         $out = $ssh.Output
         foreach ($o in $out) {
             switch ($o) {
@@ -175,7 +181,7 @@ Function VsProfiles {
     $ssh = $null
     $ssh = (Invoke-SSHCommand -SSHSession (Get-SSHSession -ComputerName $f) -Command "$cmd")
 
-    If ($ssh.ExitStatus -eq 0) {
+    if ($ssh.ExitStatus -eq 0) {
         $out = $ssh.Output
         foreach ($o in $out) {
             switch ($o) {
@@ -207,10 +213,10 @@ $i = 0
 $Results = foreach ($f in $F5) {
     
     $i++
-    Try {
+    try {
         Write-Progress "Gathering SSL profile info from '$f'" -PercentComplete $($i / $F5.Count * 100)
     }
-    Catch {}
+    catch {}
 
     SSHSession
     $shell = GetShell
@@ -228,12 +234,12 @@ $Results = foreach ($f in $F5) {
         $match = $vsprofiles | Where-Object { ($_.Profile -eq $sp.Profile) -and ($_.F5 -eq $f) }
 
         # The individual SSL profile ($sp) is used by a virtual server
-        If ($match) {
+        if ($match) {
             $match | Select-Object F5,VS,Profile,@{N="Context";E={$sp.Context}},@{N="Peer-Cert-Mode";E={$sp.'Peer-Cert-Mode'}}
         }
 
         # The individual SSL profile ($sp) is *NOT* used by a virtual server
-        Else {
+        else {
             $sp | Select-Object F5,@{N="VS";E={[string]::new("None")}},Profile,Context,'Peer-Cert-Mode'
         }
     }
