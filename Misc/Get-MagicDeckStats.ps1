@@ -10,13 +10,14 @@ Calculates and displays statistics for MTG deck list.
 Author: 
     DS
 Notes:
-    Revision 05
+    Revision 06
 Revision:
     V01: 2025.11.25 by DS :: First revision. Needs work, but functions.
 	V02: 2025.11.26 by DS :: Better decklist format handling (tabs and 'x').
 	V03: 2025.11.27 by DS :: Added 'SampleHand' function.
 	V04: 2025.12.04 by DS :: Added logic for .cod (cockatrice xml).
 	V05: 2025.12.11 by DS :: Added logic to skip sideboard.
+	V06: 2025.12.11 by DS :: Added 'SampleHand' switched parameter.
 Call From:
     Windows PowerShell v5.1 or Microsoft PowerShell v7.x
 
@@ -32,7 +33,7 @@ Path to cockatrice *.cod file or plain text (*.dec, *.dek, *.txt) file ie;
 	4x Shock
 	4	Rift Bolt
 	4x	Chain Lightning
-File contents below a carriage return are not processed (sideobard).
+File contents below a carriage return are not processed (assumed sideboard).
 
 .PARAMETER SuperTypes
 Retain card supertypes of Basic, Legendary, and Snow.
@@ -68,7 +69,11 @@ param (
 
     # Automatically save charts rather than display
     [Parameter(Mandatory=$False)]
-    [switch]$AutoSave = $false
+    [switch]$AutoSave = $false,
+	
+	# Draw sample hand and additional card(s) after displaying charts
+    [Parameter(Mandatory=$False)]
+    [switch]$SampleHand = $false
 )
 
 # assemblies required for charts
@@ -440,5 +445,8 @@ $cost = foreach ($c in ($($deck | Where-Object {$_.type -notlike "*land*"}).cmc 
 # swing with everything
 PieChart
 ColumnChart
-SampleHand
+if ($SampleHand -eq $true) {
+	SampleHand
+}
+
 }
