@@ -10,12 +10,13 @@ Calculates and displays statistics for MTG deck list.
 Author: 
     DS
 Notes:
-    Revision 04
+    Revision 05
 Revision:
     V01: 2025.11.25 by DS :: First revision. Needs work, but functions.
 	V02: 2025.11.26 by DS :: Better decklist format handling (tabs and 'x').
 	V03: 2025.11.27 by DS :: Added 'SampleHand' function.
 	V04: 2025.12.04 by DS :: Added logic for .cod (cockatrice xml).
+	V05: 2025.12.11 by DS :: Added logic to skip sideboard.
 Call From:
     Windows PowerShell v5.1 or Microsoft PowerShell v7.x
 
