@@ -1,16 +1,16 @@
 ﻿Function Get-ADOrganizationalUnitAcl {
 <#
 .SYNOPSIS
-Retrieves AD organizational unit ACLs.
+Retrieves AD organizational unit (OU) ACLs.
 
 .DESCRIPTION
-Retrieves AD organizational unit ACLs. 'IdentityReference' and 'ExcludeInherited' parameters can be specified to filter results.
+Retrieves AD OU ACLs. 'IdentityReference' and 'ExcludeInherited' parameters can be specified to filter results.
 
 .NOTES
 Author: 
     DS
 Notes:
-    Revision 06
+    Revision 07
 Revision:
     V01: 2022.03.15 by DS :: First revision.
     V02: 2022.04.07 by DS :: Fixed typo in script header.
@@ -18,6 +18,7 @@ Revision:
     V04: 2022.06.01 by DS :: Added -Server and -Credential parameters.
     V05: 2025.05.22 by DS :: Dust blown off for GitHub.
     V06: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Optimized logic for alternate credentials.
+    V07: 2025.12.12 by DS :: Minor change to required modules. Line lengths.
 Call From:
     PowerShell v5.1+ w/ ActiveDirectory module
 
@@ -41,15 +42,15 @@ Optional parameter to specify credential used in making connection to AD server.
 
 .EXAMPLE
 Get-ADOrganizationalUnitAcl
-Will return *all* Organizational Unit ACLs for the entire domain.
+Returns *all* OU ACLs for the entire domain.
 
 .EXAMPLE
 Get-ADOrganizationalUnitAcl -IdentityReference "HelpDesk"
-Will return Organizational Unit ACLs which have an IdentityReference like "*HelpDesk*"
+Returns OU ACLs which have an IdentityReference like "*HelpDesk*"
 
 .EXAMPLE
 Get-ADOrganizationalUnitAcl -IdentityReference "HelpDesk" -ExcludeInherited
-Will return Organizational Unit ACLs with permission that are not inherited and have an IdentityReference like "*HelpDesk*"
+Returns OU ACLs with rights that are not inherited and have an IdentityReference like "*HelpDesk*"
 #>
 
 [CmdletBinding()]
@@ -77,8 +78,7 @@ foreach ($rm in $RequiredModules) {
         }
     }
     catch {
-        Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        break
+        throw
     }
 }
 
@@ -97,28 +97,31 @@ if ($Credential) {
 try {
     $ACLs = Invoke-Command @InvokeParams -ScriptBlock {
         Import-Module ActiveDirectory
-        $OUs = Get-ChildItem -Path "AD:\$($using:Domain.DistinguishedName)" -Recurse | Where-Object {$_.ObjectClass -eq "organizationalUnit"}
+        $OUs = Get-ChildItem -Path "AD:\$($using:Domain.DistinguishedName)" -Recurse |
+            Where-Object {$_.ObjectClass -eq "organizationalUnit"}
+        
         foreach ($ou in $OUs) {
-            (Get-Acl -Path "AD:\$($ou.distinguishedName)").Access | Select-Object @{Name="OrganizationalUnit";Expression={"$($ou.distinguishedName)"}},*
+            (Get-Acl -Path "AD:\$($ou.distinguishedName)").Access |
+                Select-Object @{Name="OrganizationalUnit";Expression={"$($ou.distinguishedName)"}},*
         }
     }
 }
 catch [System.Management.Automation.Remoting.PSRemotingTransportException] {
-    Write-Host "FAILURE: Invalid credentials for connecting to '$($Domain.PDCEmulator)'" -ForegroundColor Red
+    throw
 }
 
 if ($ACLs) {
     
     # Return ACLs filtered on $IdentityReference
     if (!$ExcludeInherited) {
-        $ACLs | Where-Object {$_.IdentityReference -like "*$IdentityReference*"} | Select-Object `
-            @{N="Server";E={$Domain.PDCEmulator}},*
+        $ACLs | Where-Object {$_.IdentityReference -like "*$IdentityReference*"} |
+            Select-Object @{N="Server";E={$Domain.PDCEmulator}},*
     }
     
     # Return ACLs filtered on $IdentityReference omitting inherited ACLs
     else {
-        $ACLs | Where-Object {$_.IdentityReference -like "*$IdentityReference*" -and $_.IsInherited -eq $False} | Select-Object `
-            @{N="Server";E={$Domain.PDCEmulator}},*
+        $ACLs | Where-Object {$_.IdentityReference -like "*$IdentityReference*" -and $_.IsInherited -eq $False} |
+            Select-Object @{N="Server";E={$Domain.PDCEmulator}},*
     }
 }
 

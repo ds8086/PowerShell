@@ -10,11 +10,12 @@ Finds available SamAccountName based on 'GivenName' and 'Surname' values.
 Author: 
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision:
     V01: 2025.05.22 by DS :: First polished version for GitHub.
     V02: 2025.08.02 by DS :: Required modules logic.
     V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
+    V04: 2025.12.12 by DS :: Minor change to required modules. Line lengths.
 Call From:
     PowerShell v5.1+ w/ ActiveDirectory module
 
@@ -35,11 +36,11 @@ Optional parameter to specify the domain or domain controller for AD operations.
 
 .EXAMPLE
 Find-AvailableSamAccountName -GivenName James -Surname Kirk
-Will search AD for the first available SamAccountName based on the naming convention of first letter of GivenName and complete Surname (jkirk).
+Find available SamAccountName using naming convention; first letter of GivenName and complete Surname (jkirk).
 
 .EXAMPLE
 Import-Csv .\user_list.csv | % { Find-AvailableSamAccountName -GivenName $_.GivenName -Surname $_.Surname }
-Will search AD for the first available SamAccountName for each user listed in the two column (GivenName and Surname) CSV file.
+Find available SamAccountName for each user listed in the two column (GivenName and Surname) CSV file.
 #>
 
 [CmdletBinding()]
@@ -63,8 +64,7 @@ foreach ($rm in $RequiredModules) {
         }
     }
     catch {
-        Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        break
+        throw
     }
 }
 

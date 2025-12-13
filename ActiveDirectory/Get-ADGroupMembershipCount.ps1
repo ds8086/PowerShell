@@ -10,11 +10,12 @@ Retrieves group membership count for specified AD user.
 Author:
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision:
     V01: 2024.04.12 by DS :: Rough draft revision.
     V02: 2025.11.20 by DS :: Polished for GitHub.
     V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
+    V04: 2025.12.12 by DS :: Minor change to required modules. Line lengths.
 Call From:
     PowerShell v4 or higher w/ ActiveDirectory module
 
@@ -31,16 +32,17 @@ The identity (samAccountName, UserPrincipleName, DN) of AD user.
 The domain or domain controller for AD queries.
 
 .PARAMETER NoLimit
-Switched parameter which, when specified, queries all group memberships for AD user past the realistic usable limit of 1000.
+Queries all group memberships for AD user past the realistic usable limit of 1000.
 
 .EXAMPLE
 Get-ADGroupMembershipCount -Identity 'JKirk' -Server 'dc01.contoso.com'
-Retrieves the group membership count for AD user 'JKirk' from server 'dc01.contoso.com'.
+Retrieves group membership count for user 'JKirk' from server 'dc01.contoso.com'.
 
 .EXAMPLE
 Get-ADGroupMembershipCount -Identity 'JKirk' -Server 'contoso.com' -NoLimit
-Retrieves the group membership count for AD user 'JKirk' from domain 'contoso.com' past the realistic usable limit of 1000 groups.
+Retrieves group membership count for user 'JKirk' from domain 'contoso.com' past the realistic usable limit (1000).
 #>
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory=$False,Position=0)]
@@ -52,6 +54,19 @@ param (
     [Parameter(Mandatory=$False)]
     [switch]$NoLimit = $false
 )
+
+# Define and import required modules
+$RequiredModules = "ActiveDirectory"
+foreach ($rm in $RequiredModules) {
+    try {
+        if (!(Get-Module -Name $rm)) {
+            Import-Module -Name $rm -ErrorAction Stop
+        }
+    }
+    catch {
+        throw
+    }
+}
 
 # Arrays to hold queued and result AD groups
 $Queued = New-Object -TypeName System.Collections.ArrayList

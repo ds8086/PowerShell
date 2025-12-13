@@ -8,12 +8,13 @@ Retrieves list of AD schema objects and corresponding GUIDs from specified serve
 Author: 
     DS
 Notes:
-    Revision 04
+    Revision 05
 Revision:
     V01: 2023.01.17 by DS :: First revision.
     V02: 2025.03.22 by DS :: Updated for GitHub.
-    V03: 2025.05.16 by DS :: Updated to include ObjectID (attributeID & governsID). Guid now calculated during 'Select-Object' (faster).
+    V03: 2025.05.16 by DS :: Include ObjectID (attributeID & governsID). Calculate GUID during 'Select-Object' (faster).
     V04: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
+    V05: 2025.12.12 by DS :: Minor change to required modules. Line lengths.
 Call From:
     PowerShell v5.1 or higher w/ ActiveDirectory module.
 
@@ -51,25 +52,46 @@ foreach ($rm in $RequiredModules) {
         }
     }
     catch {
-        Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        break
+        throw
     }
 }
 
 # Schema naming context
 $schemaNamingContext = (Get-ADRootDSE -Server $Server).schemaNamingContext
 
-# Filters for AD object search
-$class = "(objectclass=classschema)"
-$attribute = "(objectclass=attributeSchema)"
-
 # AD objects (classSchema)
-$Objects = Get-ADObject -Server $Server -LDAPFilter $class -Properties LdapDisplayName,SchemaIdGuid,objectClass,governsID -SearchBase $schemaNamingContext | `
-    Select-Object LdapDisplayName,@{N="Guid";E={[System.Guid]$_.SchemaIdGuid}},objectClass,@{N="ObjectID";E={$_.governsID}}
+$classSchema = @{
+    'Server' = $Server
+    'LDAPFilter' = '(objectclass=classschema)'
+    'Properties' = @(
+        'LdapDisplayName',
+        'SchemaIdGuid',
+        'objectClass',
+        'governsID'
+    )
+    'SearchBase' = $schemaNamingContext
+}
+$Objects = Get-ADObject @classSchema | Select-Object LdapDisplayName,
+    @{N="Guid";E={[System.Guid]$_.SchemaIdGuid}},
+    'objectClass',
+    @{N="ObjectID";E={$_.governsID}}
 
 # AD objects (attributeSchema)
-$Objects += Get-ADObject -Server $Server -LDAPFilter $attribute -Properties LdapDisplayName,SchemaIdGuid,objectClass,attributeID -SearchBase $schemaNamingContext | `
-    Select-Object LdapDisplayName,@{N="Guid";E={[System.Guid]$_.SchemaIdGuid}},objectClass,@{N="ObjectID";E={$_.attributeID}}
+$attributeSchema = @{
+    'Server' = $Server
+    'LDAPFilter' = '(objectclass=attributeSchema)'
+    'Properties' = @(
+        'LdapDisplayName',
+        'SchemaIdGuid',
+        'objectClass',
+        'attributeID'
+    )
+    'SearchBase' = $schemaNamingContext
+}
+$Objects += Get-ADObject @attributeSchema | Select-Object LdapDisplayName,
+    @{N="Guid";E={[System.Guid]$_.SchemaIdGuid}},
+    'objectClass',
+    @{N="ObjectID";E={$_.attributeID}}
 
 # Output
 $Objects
