@@ -10,11 +10,12 @@ Retrieve event ID 2889 directory service log entries. Note: This logging is *not
 Author: 
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision:
     V01: 2023.03.08 by DS :: First revision.
     V02: 2025.11.19 by DS :: Minor overhaul for GitHub.
     V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization.
+    V04: 2025.12.16 by DS :: Line lengths.
 Call From:
     PowerShell v4 or higher
 
@@ -25,7 +26,7 @@ None
 None
 
 .PARAMETER MaxEvents
-Optional parameter to specify the number of most recent events in directory services log to search for event ID 2889 log entries. Default is 5000.
+The number of recent events in directory services log to search for event ID 2889 log entries. Default is 5000.
 
 .EXAMPLE
 Get-LDAPSigningEvents
@@ -78,7 +79,8 @@ if ($WinEvent) {
 		Write-Progress "Parsing events..." -PercentComplete ($i / $WinEvent.Count * 100)
 		
 		$message = $null
-		$message = $we.Message.split([System.Environment]::NewLine) | Where-Object {$_ -ne "" -and $_ -ne " " -and $_ -notlike "The following client performed a SASL*"}
+		$message = $we.Message.split([System.Environment]::NewLine) |
+            Where-Object {$_ -ne "" -and $_ -ne " " -and $_ -notlike "The following client performed a SASL*"}
 			
 		$we | Select-Object @select
 	}
