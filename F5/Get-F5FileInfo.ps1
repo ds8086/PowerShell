@@ -4,17 +4,18 @@
 Determine file info for a specified file on F5(s).
 
 .DESCRIPTION
-Determine file info for a specified file on F5(s). Useful for determining if there are synchronization issues between F5s in a GTM mesh.
+Determine file info for a specified file on F5(s). Useful for finding synchronization issues between F5s in a GTM mesh.
 
 .NOTES
 Author: 
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision:
     V01: 2025.02.20 by DS :: First revision.
     V02: 2025.05.22 by DS :: Updated for GitHub.
     V03: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Minor change to required modules.
+    V04: 2025.12.19 by DS :: Line lengths. Minor change to 'SSHSession' subfunction.
 Call From:
     PowerShell v5.1 or higher w/ Posh-SSH module.
 
@@ -78,12 +79,15 @@ Function SSHSession {
         if ($null -eq $Credential) {
             $Credential = Get-Credential -Message "Enter SSH credentials for $f"
         }
-        try {
-            New-SSHSession -ComputerName $f -Port 22 -Credential $Credential -AcceptKey -Force -WarningAction SilentlyContinue -ErrorAction Stop | Out-Null
+        $session = @{
+            'ComputerName' = $f
+            'Port' = 22
+            'Credential' = $Credential
+            'AcceptKey' = $True
+            'Force' = $True
+            'WarningAction' = 'SilentlyContinue'
         }
-        catch {
-            Write-Error -Exception "SSH.Error" -Message "Cannot SSH to '$f' with username '$($Credential.UserName)'" -Category AuthenticationError
-        }
+        New-SSHSession @session | Out-Null
     }
 }
 

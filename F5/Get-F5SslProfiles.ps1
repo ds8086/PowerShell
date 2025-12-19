@@ -10,18 +10,19 @@ Determine SSL profile and virtual server info for specified F5(s).
 Author: 
     DS
 Notes:
-    Revision 10
+    Revision 11
 Revision:
     V01: 2023.04.24 by DS :: First revision.
     V02: 2023.06.01 by DS :: Added '#Requires -Module Posh-SSH'.
     V03: 2023.07.03 by DS :: Removed 'ValueFromPipeline=$True' from $F5 parameter. Cleaned up spacing.
-    V04: 2023.07.12 by DS :: Removed '#Requires -Module Posh-SSH' (not honored in functions). Added logic for importing the module.
-    V05: 2024.07.17 by DS :: Added 'Shell' subfunction and updated invoked SSH commands to account for non-bash shell users.
+    V04: 2023.07.12 by DS :: Removed '#Requires -Module Posh-SSH'. Added logic for importing the module.
+    V05: 2024.07.17 by DS :: Added 'Shell' subfunction. Updated invoked SSH to account for non-bash shell users.
     V06: 2024.12.23 by DS :: Fixed 'problems' reported by VS code.
     V07: 2025.03.17 by DS :: Updated comments and spacing.
-    V08: 2025.03.20 by DS :: Added 'peer-cert-mode' to output. Replaced 'Shell' subfunction with 'GetShell'. Improved 'VsProfiles' subfunction.
+    V08: 2025.03.20 by DS :: Added 'peer-cert-mode' to output. Replaced 'Shell' with 'GetShell'. Improved 'VsProfiles'.
     V09: 2025.03.21 by DS :: Cleaned variable names in subfunctions.
     V10: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Minor change to required modules.
+    V11: 2025.12.19 by DS :: Line lengths. Minor change to 'SSHSession' subfunction.
 Call From:
     PowerShell v5.1 or higher w/ Posh-SSH module
 
@@ -75,7 +76,15 @@ Function SSHSession {
         if ($null -eq $Credential) {
             $Credential = Get-Credential -Message "Enter SSH credentials for $f"
         }
-        New-SSHSession -ComputerName $f -Port 22 -Credential $Credential -AcceptKey -Force -WarningAction SilentlyContinue | Out-Null
+        $session = @{
+            'ComputerName' = $f
+            'Port' = 22
+            'Credential' = $Credential
+            'AcceptKey' = $True
+            'Force' = $True
+            'WarningAction' = 'SilentlyContinue'
+        }
+        New-SSHSession @session | Out-Null
     }
 }
 
@@ -235,7 +244,11 @@ $Results = foreach ($f in $F5) {
 
         # The individual SSL profile ($sp) is used by a virtual server
         if ($match) {
-            $match | Select-Object F5,VS,Profile,@{N="Context";E={$sp.Context}},@{N="Peer-Cert-Mode";E={$sp.'Peer-Cert-Mode'}}
+            $match | Select-Object F5,
+                VS,
+                Profile,
+                @{N="Context";E={$sp.Context}},
+                @{N="Peer-Cert-Mode";E={$sp.'Peer-Cert-Mode'}}
         }
 
         # The individual SSL profile ($sp) is *NOT* used by a virtual server

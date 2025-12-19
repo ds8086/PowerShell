@@ -10,10 +10,11 @@ Determine HTTP compression profile and virtual server info for specified F5(s).
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2025.03.20 by DS :: First revision (quick repurpose of 'Get-F5SslProfiles').
     V02: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Minor change to required modules.
+    V03: 2025.12.19 by DS :: Line lengths. Minor change to 'SSHSession' subfunction.
 Call From:
     PowerShell v5.1 or higher w/ Posh-SSH module
 
@@ -35,7 +36,7 @@ Will retrieve HTTP compression profile and virtual server info from 'f5-ext-01.c
 
 .EXAMPLE
 $F5Creds = Get-Credential; Get-F5SslProfiles -F5 'f5-ext-01.contoso.com' -Credential $F5Creds
-Using credentials in variable $F5Creds, retrieves HTTP compression profile and virtual server info from 'f5-ext-01.contoso.com'.
+Retrieves HTTP compression profile and virtual server info from 'f5-ext-01.contoso.com' using specified credentials.
 #>
 
 [CmdletBinding()]
@@ -67,7 +68,15 @@ Function SSHSession {
         if ($null -eq $Credential) {
             $Credential = Get-Credential -Message "Enter SSH credentials for $f"
         }
-        New-SSHSession -ComputerName $f -Port 22 -Credential $Credential -AcceptKey -Force -WarningAction SilentlyContinue | Out-Null
+        $session = @{
+            'ComputerName' = $f
+            'Port' = 22
+            'Credential' = $Credential
+            'AcceptKey' = $True
+            'Force' = $True
+            'WarningAction' = 'SilentlyContinue'
+        }
+        New-SSHSession @session | Out-Null
     }
 }
 
@@ -186,7 +195,7 @@ $Results = foreach ($f in $F5) {
     Write-Verbose "Retrieve virtual servers from '$f'"
     $vsprofiles = VsProfiles
 
-    # Attempt to match each HTTP compression profile with a virtual server using data stored in $compressionprofiles and $vsprofiles
+    # Attempt to match HTTP compression profile with a virtual server using $compressionprofiles and $vsprofiles
     foreach ($cp in $compressionprofiles) {
         
         $match = $null

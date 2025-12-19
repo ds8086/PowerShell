@@ -10,10 +10,11 @@ Retrieves outbound SMTP config for specified F5(s).
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2025.03.02 by DS :: First revision.
     V02: 2025.12.11 by DS :: Cleaned up header and statement capitalization. Minor change to required modules.
+    V03: 2025.12.19 by DS :: Line lengths. Minor change to 'SSHSession' subfunction.
 Call From:
     PowerShell v5.1 or higher w/ Posh-SSH
 
@@ -67,7 +68,15 @@ Function SSHSession {
         if ($null -eq $Credential) {
             $Credential = Get-Credential -Message "Enter SSH credentials for $f"
         }
-        New-SSHSession -ComputerName $f -Port 22 -Credential $Credential -AcceptKey -Force -WarningAction SilentlyContinue | Out-Null
+        $session = @{
+            'ComputerName' = $f
+            'Port' = 22
+            'Credential' = $Credential
+            'AcceptKey' = $True
+            'Force' = $True
+            'WarningAction' = 'SilentlyContinue'
+        }
+        New-SSHSession @session | Out-Null
     }
 }
 
