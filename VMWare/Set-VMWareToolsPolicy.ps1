@@ -10,29 +10,30 @@ Set VMWare Tools upgrade policy for specified VM(s) to either 'manual' or 'auto'
 Author: 
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision:
     V01: 2017.05.22 by DS :: Proof of concept.
-    V01: 2025.05.28 by DS :: Updated for GitHub. Standalone ESXi complains about licensing so I cannot test this, but it *should* work. AOL Keyword: Should.
+    V01: 2025.05.28 by DS :: Updated for GitHub.
+    V03: 2025.12.22 by DS :: Line lengths. Statement capitalization. Minor change to required modules.
 Call From:
     PowerShell v5.1+ w/ VMware.VimAutomation.Core module 13.3.0+
 
 .PARAMETER Server
-The name of the VIServer for which VMWare tools upgrade policy information will be set. The default value is $global:DefaultVIServers.
+VIServer for which VMWare tools upgrade policy information will be set. The default value is $global:DefaultVIServers.
 
 .PARAMETER Name
-The name of VMs for which to set VMWare tools upgrade policy. Accepts wildcard (*).
+VM name(s) for which to set VMWare tools upgrade policy. Accepts wildcard (*).
 
 .PARAMETER Policy
-The VMWare tools upgrade policy to set on VM(s). Valid values are 'manual' and 'upgradeAtPowerCycle'.
+VMWare tools upgrade policy to set on VM(s). Valid values are 'manual' and 'upgradeAtPowerCycle'.
 
 .EXAMPLE
 Set-ToolsUpgradePolicy -Name "webserver*" -Policy upgradeAtPowerCycle
-Will set VMware Tools upgrade policy for each VM with a name like "webserver*" to 'upgradeAtPowerCycle'. A confirmation prompt will occur for each VM.
+Sets VMware Tools upgrade policy for VMs with a name like "webserver*" to 'upgradeAtPowerCycle'.
 
 .EXAMPLE
 Set-ToolsUpgradePolicy -Name "webserver*" -Policy upgradeAtPowerCycle -Confirm:$False
-Will set VMware Tools upgrade policy for each VM with a name like "webserver*" to 'upgradeAtPowerCycle'. No confirmation prompts will occur.
+Sets VMware Tools upgrade policy for VMs with a name like "webserver*" to 'upgradeAtPowerCycle' without confirmation.
 #>
 [CmdletBinding()]
 param (
@@ -54,24 +55,23 @@ param (
 # Define and import required modules
 $RequiredModules = "VMware.VimAutomation.Core"
 foreach ($rm in $RequiredModules) {
-    Try {
-        If (!(Get-Module -Name $rm)) {
+    try {
+        if (!(Get-Module -Name $rm)) {
             Import-Module -Name $rm -ErrorAction Stop
         }
     }
-    Catch {
-        Write-Host "FAILURE: Required module '$rm' could not be imported!" -ForegroundColor Red
-        Break
+    catch {
+        throw
     }
 }
 
 # Not connected to *any* VIServer(s)
-If (!($global:DefaultVIServers)) {
+if (!($global:DefaultVIServers)) {
     Write-Warning "Not connected to VIServer(s)"
-    If ($Server) {
+    if ($Server) {
         Connect-VIServer -Server $Server | Out-Null
     }
-    Else {
+    else {
         Connect-VIServer | Out-Null
     }
     [string[]]$Server = $global:DefaultVIServers.Name
@@ -83,29 +83,31 @@ $vmConfigSpec.Tools = New-Object VMware.Vim.ToolsConfigInfo
 $vmConfigSpec.Tools.ToolsUpgradePolicy = $Policy
 
 foreach ($s in $Server) {
-    Try {
+    try {
         $VMs = Get-VM -Server $s -Name $Name
     }
-    Catch {
+    catch {
         $Error[0].Exception
     }
     $VMs | ForEach-Object {
-        If ($Confirm) {
+        if ($Confirm) {
             $prompt = $null
-            Do {
+            do {
                 $prompt = Read-Host -Prompt "Update VMWare tools upgrade policy for '$($_.Name)' to '$Policy'? (Y/n)"
             }
-            Until ($prompt.ToLower() -in 'y','n')
+            until (
+                $prompt.ToLower() -in 'y','n'
+            )
             
-            If ($prompt -eq 'y') {
+            if ($prompt -eq 'y') {
                 $view = Get-View -Id $_.Id
                 $view.ReconfigVM_Task($vmConfigSpec)
             }
-            Else {
+            else {
                 Write-Verbose "VMWare tools upgrade policy for '$($_.Name)' unchanged"
             }
         }
-        Else {
+        else {
             $view = Get-View -Id $_.Id
             $view.ReconfigVM_Task($vmConfigSpec)
         }
