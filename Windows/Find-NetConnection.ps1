@@ -15,9 +15,10 @@ Similar to the native 'Test-NetConnection' cmdlet provided by the NetTCPIP modul
 Author:
     DS
 Notes:
-    Revision 01
+    Revision 02
 Revision:
     V01: 2025.06.12 by DS :: Initial revision.
+    V02: 2025.12.22 by DS :: Line lengths. Backticks. Statement capitalization.
 Call From:
     PowerShell v5.1 or higher
 
@@ -43,12 +44,14 @@ Tests network connectivity on ports 80 and 443 for the computer(s) with IP addre
 
 .EXAMPLE
 Find-NetConnection -ComputerName (Get-Content .\computers.txt) -Port (Get-Content .\ports.txt) -OpenOnly
-Tests network connectivity on all ports listed in the document 'ports.txt' for the computers listed in document 'computers.txt' but only returns ports which appear to be open on the specified computers.
+Tests network connectivity on ports listed in 'ports.txt' for the computers listed in 'computers.txt'.
+Only returns ports which appear to be open on the specified computers.
 
 .EXAMPLE
 Find-NetConnection
 No parameters, but how?! What could it possibly do?
 #>
+
 [CmdletBinding()]
 param (
     [Parameter(Mandatory=$false, Position=0)]
@@ -78,14 +81,14 @@ Begin {
         # Create TCP client connection, wait, check if connected, then close
         $t.BeginConnect($c, $p, $r, $s) | Out-Null
         Start-Sleep -Milliseconds $Timeout
-        If ($t.Connected) { $o = $true } else { $o = $false }
+        
+        if ($t.Connected) { $o = $true } else { $o = $false }
         $t.Close()
 
         # results for individual test
         $res = $null
-        $res = "" | Select-Object `
-            @{Name='ComputerName';Expression={$c}},`
-            @{Name='Port';Expression={$p}},`
+        $res = "" | Select-Object @{Name='ComputerName';Expression={$c}},
+            @{Name='Port';Expression={$p}},
             @{Name='Open';Expression={$o}}
 
         # add individual results to array output in 'end' block
@@ -93,7 +96,7 @@ Begin {
     }
 
     # Default value for $ComputerName if not specified
-    If (!$ComputerName) {
+    if (!$ComputerName) {
         Write-Verbose "ComputerName not specified, using ARP table entries"
         $ComputerName = arp -a | findstr dynamic | ForEach-Object {
             $_.Split(' ') | Where-Object { $_ -notin '','dynamic' -and $_ -notlike "??-??-??-??-??-??" }
@@ -101,20 +104,32 @@ Begin {
     }
 
     # Default value for $Port if not specified
-    If (!$Port) {
+    if (!$Port) {
         Write-Verbose "Port not specified, using list of interesting ports"
-        $Port = 21,22,23,25,53,80,88,110,135,139,143,179,201,389,443,445,520,1433,1521,3128,3306,3389,5060,5900,6000,9100
+        $Port = @(
+            21,22,23,25,53,80,88,
+            110,135,139,143,179,
+            201,
+            389,
+            443,445,
+            520,
+            1433,1521,
+            3128,3306,3389,
+            5060,5900,
+            6000,
+            9100
+        )
     }
 } # Begin
 
 Process {
     $i = 0
-    Foreach ($c in $ComputerName) {
+    foreach ($c in $ComputerName) {
         $i++
         Write-Progress "Processing computer '$c'" -PercentComplete ($i / $ComputerName.Count * 100) -Id 1
 
         $ii = 0
-        Foreach ($p in $Port) {
+        foreach ($p in $Port) {
             $ii++
             Write-Progress "Testing port '$p'" -PercentComplete ($ii / $Port.Count * 100) -ParentId 1
             tcpTest
@@ -123,10 +138,10 @@ Process {
 } # Process
 
 End {
-    If ($OpenOnly) {
+    if ($OpenOnly) {
         $Results | Where-Object {$_.Open -eq $True}
     }
-    Else {
+    else {
         $Results
     }
 }
