@@ -10,10 +10,11 @@ Determines the largest files in the specified folder path.
 Author:
     DS
 Notes:
-    Revision 02
+    Revision 03
 Revision
     V01: 2025.05.22 by DS :: First published version, split from 'Get-FolderSize'.
     V02: 2025.12.22 by DS :: Line lengths. Backticks. Statement capitalization.
+    V03: 2026.11.03 by DS :: Removed [catch] constraint.
 Call From:
     PowerShell v5.1+
 
@@ -48,11 +49,10 @@ $Results = @{
 }
 
 try {
-    # Retrieve files (stop on first permissions error)
     $Files = Get-ChildItem $FolderPath -Recurse -Force -ErrorAction Stop |
         Where-Object {$_.PSIsContainer -ne $true}
 }
-catch [System.UnauthorizedAccessException] {
+catch {
     Write-Warning "$($Error[0].exception)"
     Write-Warning "Results may be incomplete!"
     $Files = Get-ChildItem $FolderPath -Recurse -Force -ErrorAction SilentlyContinue |
