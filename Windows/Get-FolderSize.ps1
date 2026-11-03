@@ -10,11 +10,12 @@ Calculates the total file size for the specified folder path.
 Author:
     DS
 Notes:
-    Revision 03
+    Revision 04
 Revision
     V01: 2022.04.19 by DS :: First published and polished revision, previously a dot-slash script.
     V02: 2025.05.22 by DS :: Put on your Sunday clothes kids, we're going to GitHub!
     V03: 2025.12.22 by DS :: Line lengths. Statement capitalization.
+    V04: 2026.11.03 by DS :: Removed [catch] constraint.
 Call From:
     PowerShell v5.1+
 
@@ -36,11 +37,10 @@ param (
 $Results = "" | Select-Object FolderPath,FileCount,SizeMB,SizeGB
 
 try {
-    # Retrieve files (stop on first permissions error)
     $Files = Get-ChildItem $FolderPath -Recurse -Force -ErrorAction Stop |
         Where-Object {$_.PSIsContainer -ne $true}
 }
-catch [System.UnauthorizedAccessException] {
+catch {
     Write-Warning "$($Error[0].exception)"
     Write-Warning "Results may be incomplete!"
     $Files = Get-ChildItem $FolderPath -Recurse -Force -ErrorAction SilentlyContinue |
